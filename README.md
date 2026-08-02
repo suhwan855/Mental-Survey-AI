@@ -1,4 +1,4 @@
-# Mental Health Risk Analysis
+# Mental Survey AI
 
 표준 정신건강 설문 응답을 기반으로 우울, 불안, 스트레스와 자살 위험 신호를 분석하는 머신러닝 기반 서비스입니다.
 
