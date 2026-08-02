@@ -2,6 +2,8 @@
 # 확률 라벨링(로지스틱 링크) + 학습(LogReg vs RF) + 캘리브레이션 + 저장
 
 import warnings
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Tuple, Dict
 
@@ -12,13 +14,14 @@ from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.metrics import average_precision_score, roc_auc_score, precision_score, recall_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.calibration import CalibratedClassifierCV
 
 RANDOM_STATE = 42
 np.random.seed(RANDOM_STATE)
+TRAINING_REPORT = {}
 
 # ---------- 0) helpers ----------
 def sigmoid(z):
@@ -165,10 +168,13 @@ def train_one_label(
             roc = roc_auc_score(yte, p)
         except ValueError:
             roc = float("nan")
-        return pr, roc
+        pred = (p >= 0.5).astype(int)
+        return {"pr_auc": float(pr), "roc_auc": float(roc), "precision_at_0_5": float(precision_score(yte, pred, zero_division=0)), "recall_at_0_5": float(recall_score(yte, pred, zero_division=0))}
 
-    lg_pr, lg_roc = eval_model(cal_logreg)
-    rf_pr, rf_roc = eval_model(cal_rf)
+    lg_metrics = eval_model(cal_logreg)
+    rf_metrics = eval_model(cal_rf)
+    lg_pr, lg_roc = lg_metrics["pr_auc"], lg_metrics["roc_auc"]
+    rf_pr, rf_roc = rf_metrics["pr_auc"], rf_metrics["roc_auc"]
 
     print(
         f"[{label_name}] Cal-LogReg PR-AUC={lg_pr:.4f} ROC-AUC={lg_roc:.4f}  |  "
@@ -184,6 +190,7 @@ def train_one_label(
         tag = "cal_logreg"
 
     print(f"[{label_name}] >>> selected={tag}")
+    TRAINING_REPORT[label_name] = {"selected_model": tag, "prevalence": float(y.mean()), "test_samples": int(len(yte)), "candidates": {"calibrated_logistic_regression": lg_metrics, "calibrated_random_forest": rf_metrics}}
 
     outdir.mkdir(exist_ok=True, parents=True)
     final_path = outdir / f"{label_name}_model.joblib"
@@ -209,6 +216,8 @@ def train_and_save_all(n_samples: int = 100_000, outdir: Path = None) -> Dict[st
     # feature order 저장(프론트/서버 alignment용)
     feat_order = ["phq_total", "gad_total", "k10_total", "phq_item9", "asq_any_yes"]
     joblib.dump(feat_order, outdir / "feature_order.joblib")
+    report = {"generated_at": datetime.now(timezone.utc).isoformat(), "random_state": RANDOM_STATE, "n_samples": n_samples, "data_source": "synthetic", "feature_order": feat_order, "targets": TRAINING_REPORT, "limitations": ["합성 데이터 평가 결과이며 실제 임상 성능을 의미하지 않음", "0.5 임계값은 기술 검증용이며 임상적으로 검증되지 않음"]}
+    (outdir / "training_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print("\n[train] saved:")
     for k, v in paths.items():

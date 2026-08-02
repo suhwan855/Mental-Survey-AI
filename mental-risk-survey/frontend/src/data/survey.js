@@ -1,7 +1,7 @@
 // js/survey-config.js
 
 // ======== 설정 ==========
-export const API_BASE = "http://localhost:8000"; // FastAPI 주소
+export const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 // ======== 설문 문항 ==========
 export const PHQ9A_ITEMS = [
