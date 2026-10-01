@@ -1,7 +1,7 @@
 import { STEPS } from "../data/steps.js";
 
 export function Header() {
-  return <><a className="skip-link" href="#survey-content">본문으로 건너뛰기</a><header className="site-header"><a className="brand" href="/" aria-label="MindScope 홈"><span className="brand-mark" aria-hidden="true">M</span><span>MindScope</span></a><nav className="header-nav" aria-label="주요 메뉴"><span className="status-pill"><i /> ML 데모</span><a href="/map/지역_위험_지도.html" target="_blank" rel="noreferrer">지역 인사이트</a></nav></header></>;
+  return <><a className="skip-link" href="#survey-content">본문으로 건너뛰기</a><header className="site-header"><a className="brand" href="/" aria-label="MentalSurvey 홈"><span className="brand-mark" aria-hidden="true">M</span><span>MentalSurvey</span></a><nav className="header-nav" aria-label="주요 메뉴"><span className="status-pill"><i /> ML 데모</span><a href="/map/지역_위험_지도.html" target="_blank" rel="noreferrer">지역 인사이트</a></nav></header></>;
 }
 
 export function Hero() {

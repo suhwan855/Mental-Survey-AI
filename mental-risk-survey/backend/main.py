@@ -40,7 +40,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="MindScope Risk Screening API",
+    title="MentalSurvey Risk Screening API",
     description="합성 데이터 기반 정신건강 위험 신호 ML 데모 API",
     version="1.0.0",
     lifespan=lifespan,
